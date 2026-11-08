@@ -50,12 +50,13 @@
   .vB .play { width: 3rem; height: 3rem; }
   .more { margin-top: 1.4rem; }
   .more h2 { font-size: .8rem; font-weight: 600; color: var(--mute); letter-spacing: .02em; margin: 0 0 .5rem; }
-  .row { display: flex; align-items: center; gap: .8rem; padding: .55rem 0; border: 0; border-top: 1px solid #1d1d1d; background: none; width: 100%; text-align: left; color: inherit; font: inherit; cursor: pointer; }
+  .row { display: flex; align-items: center; gap: .8rem; padding: .55rem 0; border: 0; border-top: 1px solid #1d1d1d; transition: border-color .25s; background: none; width: 100%; text-align: left; color: inherit; font: inherit; cursor: pointer; }
   .row img { width: 3rem; height: 3rem; object-fit: cover; flex: none; }
   .row .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .15rem; }
   .row .t b { font-weight: 600; font-size: .92rem; color: #fff; }
   .row .t span { font-size: .78rem; color: var(--mute); }
   .row .d { font: .72rem ui-monospace, Menlo, monospace; color: var(--mute); }
+  .list.moving .row, #list.moving .row { border-top-color: transparent; }
   .row .p { width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid #444; display: grid; place-items: center; flex: none; }
   .row .p svg { width: .8rem; height: .8rem; fill: #fff; }
   .row.now .p { background: #fff; } .row.now .p svg { fill: #000; }
@@ -236,6 +237,7 @@ if (location.protocol === 'http:' && location.hostname !== 'localhost' && locati
     if (Math.abs(gtgt - gy) < 0.05 && Math.abs(gv) < 0.05) { gy = gtgt; gv = 0; }
     applyGlass();
     list.style.setProperty('--gy', gy.toFixed(2));
+    list.classList.toggle('moving', Math.abs(gy) > 0.6);
     requestAnimationFrame(gframe);
   }
   more.addEventListener('pointerdown', function (e) { var rw = e.target.closest && e.target.closest('.row'); var idx = rw ? Array.prototype.indexOf.call(list.children, rw) : -1; if (idx < 2) return; gdrag = true; gmoved = false; gstart = e.clientY; gbase = gtgt; });
