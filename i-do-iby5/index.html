@@ -78,7 +78,9 @@
   .sheen { position: absolute; left: -1.25rem; right: -1.25rem; height: 38px; top: 60%; pointer-events: none; z-index: 3; will-change: transform;
     background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,.07) 50%, rgba(255,255,255,0));
     -webkit-mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); }
-  #list { will-change: transform; }
+  .row { transform: translate3d(0, calc(var(--gy, 0) * var(--k, .3) * 1px), 0); will-change: transform; }
+  .row:nth-child(1) { --k: .06; } .row:nth-child(2) { --k: .2; } .row:nth-child(3) { --k: .34; }
+  .row:nth-child(4) { --k: .48; } .row:nth-child(5) { --k: .62; } .row:nth-child(6) { --k: .76; }
   .more { touch-action: none; user-select: none; -webkit-user-select: none; }
   .brand { position: absolute; top: max(1rem, env(safe-area-inset-top)); left: 1.25rem; z-index: 5; }
   .brand img { display: block; height: 1.45rem; width: auto; }
@@ -227,11 +229,12 @@ if (location.protocol === 'http:' && location.hostname !== 'localhost' && locati
   /* drag the glass veil up/down with a finger (or mouse); it stays where you leave it */
   var gtgt = 0, gdrag = false, gstart = 0, gbase = 0, gmoved = false;
   function clampY(v) { return Math.max(-150, Math.min(130, v)); }
+  var gv = 0;
   function gframe() {
-    gy += (gtgt - gy) * 0.22;
-    if (Math.abs(gtgt - gy) < 0.05) gy = gtgt;
+    gv += (gtgt - gy) * 0.16; gv *= 0.74; gy += gv;
+    if (Math.abs(gtgt - gy) < 0.05 && Math.abs(gv) < 0.05) { gy = gtgt; gv = 0; }
     applyGlass();
-    list.style.transform = 'translate3d(0,' + (gy * 0.04).toFixed(2) + 'px,0)';
+    list.style.setProperty('--gy', gy.toFixed(2));
     requestAnimationFrame(gframe);
   }
   more.style.touchAction = 'none';
