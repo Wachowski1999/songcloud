@@ -217,9 +217,11 @@ if (location.protocol === 'http:' && location.hostname !== 'localhost' && locati
   var more = document.querySelector('.more'), glass = document.getElementById('glass'), sheen = document.getElementById('sheen');
   var baseTop = 0, gy = 0;
   function applyGlass() {
-    glass.style.top = (baseTop + gy) + 'px';
+    var lt = list.offsetTop + 4;
+    glass.style.top = Math.max(lt, baseTop + gy) + 'px';
     sheen.style.top = (baseTop - 6) + 'px';
-    sheen.style.transform = 'translate3d(0,' + (gy * 1.15).toFixed(2) + 'px,0)';
+    var sy = Math.max(lt - (baseTop - 6), gy * 1.15);
+    sheen.style.transform = 'translate3d(0,' + sy.toFixed(2) + 'px,0)';
   }
   function placeGlass() {
     var rs = list.querySelectorAll('.row'); if (rs.length < 2) return;
