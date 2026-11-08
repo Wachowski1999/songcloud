@@ -79,7 +79,7 @@
     background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,.07) 50%, rgba(255,255,255,0));
     -webkit-mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); }
   #list { will-change: transform; }
-  @media (prefers-reduced-motion: reduce) { .glass, .sheen, #list { transform: none !important; } }
+  .more { touch-action: none; user-select: none; -webkit-user-select: none; }
   @media (max-height: 640px) { .vA .card { gap: .6rem; } }
 </style>
 </head>
@@ -208,32 +208,42 @@ if (location.protocol === 'http:' && location.hostname !== 'localhost' && locati
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !gate.hidden) closeGate(); });
   /* glass veil over the lower tracks, with a light parallax on swipe / scroll / wheel */
   var more = document.querySelector('.more'), glass = document.getElementById('glass'), sheen = document.getElementById('sheen');
+  var baseTop = 0, gy = 0;
+  function applyGlass() {
+    glass.style.top = (baseTop + gy) + 'px';
+    sheen.style.top = (baseTop - 6) + 'px';
+    sheen.style.transform = 'translate3d(0,' + (gy * 1.15).toFixed(2) + 'px,0)';
+  }
   function placeGlass() {
     var rs = list.querySelectorAll('.row'); if (rs.length < 2) return;
     var y = list.offsetTop + rs[1].offsetTop;
-    glass.style.top = y + 'px'; sheen.style.top = (y - 6) + 'px';
+    baseTop = y; applyGlass();
   }
   window.addEventListener('resize', placeGlass); window.addEventListener('load', placeGlass);
-  var tgt = 0, pp = 0, startY = null, still = null, reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function clamp(v, m) { return Math.max(-m, Math.min(m, v)); }
-  function frame() {
-    pp += (tgt - pp) * 0.14;
-    if (Math.abs(tgt - pp) < 0.05 && tgt === 0) pp = 0;
-    glass.style.transform = 'translate3d(0,' + (pp * 0.6).toFixed(2) + 'px,0)';
-    sheen.style.transform = 'translate3d(0,' + (pp * 1.3).toFixed(2) + 'px,0)';
-    list.style.transform = 'translate3d(0,' + (pp * 0.18).toFixed(2) + 'px,0)';
-    requestAnimationFrame(frame);
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* drag the glass veil up/down with a finger (or mouse); it stays where you leave it */
+  var gtgt = 0, gdrag = false, gstart = 0, gbase = 0, gmoved = false;
+  function clampY(v) { return Math.max(-150, Math.min(130, v)); }
+  function gframe() {
+    gy += (gtgt - gy) * 0.22;
+    if (Math.abs(gtgt - gy) < 0.05) gy = gtgt;
+    applyGlass();
+    list.style.transform = 'translate3d(0,' + (gy * 0.04).toFixed(2) + 'px,0)';
+    requestAnimationFrame(gframe);
   }
-  function settle() { clearTimeout(still); still = setTimeout(function () { if (startY === null) tgt = 0; }, 140); }
-  if (!reduce) {
-    document.addEventListener('touchstart', function (e) { startY = e.touches[0].clientY; }, { passive: true });
-    document.addEventListener('touchmove', function (e) { if (startY !== null) tgt = clamp((e.touches[0].clientY - startY) * 0.3, 26); }, { passive: true });
-    document.addEventListener('touchend', function () { startY = null; tgt = 0; }, { passive: true });
-    document.addEventListener('touchcancel', function () { startY = null; tgt = 0; }, { passive: true });
-    window.addEventListener('wheel', function (e) { tgt = clamp(tgt - e.deltaY * 0.15, 26); settle(); }, { passive: true });
-    window.addEventListener('scroll', function () { tgt = clamp(-(window.scrollY || 0) * 0.2, 26); settle(); }, { passive: true });
-    requestAnimationFrame(frame);
-  }
+  more.style.touchAction = 'none';
+  more.addEventListener('pointerdown', function (e) { gdrag = true; gmoved = false; gstart = e.clientY; gbase = gtgt; });
+  more.addEventListener('pointermove', function (e) {
+    if (!gdrag) return;
+    var d = e.clientY - gstart;
+    if (!gmoved && Math.abs(d) > 6) { gmoved = true; try { more.setPointerCapture(e.pointerId); } catch (_) {} }
+    if (gmoved) gtgt = clampY(gbase + d);
+  });
+  function gend() { gdrag = false; }
+  more.addEventListener('pointerup', gend); more.addEventListener('pointercancel', gend);
+  more.addEventListener('click', function (e) { if (gmoved) { e.stopPropagation(); e.preventDefault(); gmoved = false; } }, true);
+  more.addEventListener('wheel', function (e) { gtgt = clampY(gtgt - e.deltaY * 0.4); }, { passive: true });
+  if (!reduce) requestAnimationFrame(gframe);
   function fmt(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
   function paint() {
     var d = a.duration || 0, f = d ? a.currentTime / d : 0, k = Math.floor(f * N + 0.0001);
