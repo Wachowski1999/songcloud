@@ -80,11 +80,14 @@
     -webkit-mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); }
   #list { will-change: transform; }
   .more { touch-action: none; user-select: none; -webkit-user-select: none; }
+  .brand { position: absolute; top: max(1rem, env(safe-area-inset-top)); left: 1.25rem; z-index: 5; }
+  .brand img { display: block; height: 1.45rem; width: auto; }
   @media (max-height: 640px) { .vA .card { gap: .6rem; } }
 </style>
 </head>
 <body class="vB">
 <label id="hap" aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden"><input type="checkbox" switch tabindex="-1"></label>
+<header class="brand"><img src="/img/logo.png" alt="songcloud" width="800" height="173"></header>
 <main>
   <div class="card" id="card">
     <div class="top">
